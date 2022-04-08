@@ -1,0 +1,21 @@
+● bluetooth.service - Bluetooth service
+     Loaded: loaded (/lib/systemd/system/bluetooth.service; enabled; vendor preset: enabled)
+     Active: active (running) since Wed 2022-04-06 08:11:00 BST; 7h ago
+       Docs: man:bluetoothd(8)
+   Main PID: 12591 (bluetoothd)
+     Status: "Running"
+      Tasks: 1 (limit: 4915)
+        CPU: 456ms
+     CGroup: /system.slice/bluetooth.service
+             └─12591 /usr/libexec/bluetooth/bluetoothd
+
+Apr 06 15:14:40 raspberrypi bluetoothd[12591]: src/service.c:btd_service_connect() a2dp-source profile connect failed for B8:EE:65:57:85:5C: Device or resource busy
+Apr 06 15:14:43 raspberrypi bluetoothd[12591]: profiles/audio/avdtp.c:avdtp_connect_cb() connect to B8:EE:65:57:85:5C: Connection refused (111)
+Apr 06 15:14:57 raspberrypi bluetoothd[12591]: src/profile.c:ext_connect() Headset Voice gateway failed connect to B8:EE:65:57:85:5C: Connection refused (111)
+Apr 06 15:14:58 raspberrypi bluetoothd[12591]: profiles/audio/avdtp.c:avdtp_connect_cb() connect to B8:EE:65:57:85:5C: Connection refused (111)
+Apr 06 15:14:58 raspberrypi bluetoothd[12591]: src/service.c:btd_service_connect() a2dp-source profile connect failed for B8:EE:65:57:85:5C: Device or resource busy
+Apr 06 15:14:59 raspberrypi bluetoothd[12591]: profiles/audio/avdtp.c:avdtp_connect_cb() connect to B8:EE:65:57:85:5C: Connection refused (111)
+Apr 06 15:24:56 raspberrypi bluetoothd[12591]: src/profile.c:ext_connect() Headset Voice gateway failed connect to B8:EE:65:57:85:5C: Connection refused (111)
+Apr 06 15:24:56 raspberrypi bluetoothd[12591]: profiles/audio/avdtp.c:avdtp_connect_cb() connect to B8:EE:65:57:85:5C: Connection refused (111)
+Apr 06 15:24:56 raspberrypi bluetoothd[12591]: src/service.c:btd_service_connect() a2dp-source profile connect failed for B8:EE:65:57:85:5C: Device or resource busy
+Apr 06 15:24:58 raspberrypi bluetoothd[12591]: profiles/audio/avdtp.c:avdtp_connect_cb() connect to B8:EE:65:57:85:5C: Connection refused (111)
