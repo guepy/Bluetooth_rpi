@@ -3,18 +3,35 @@
 
 int main(int argc, char** argv){
 	inquiry_info* ii = NULL ;
-	BLE_prot dev_ble_prot;
+	BLE_prot dev_ble_prot= RFCOMM_PROT;
+	char prot_str[15]="UNKNOW_PROT";
 	_u8  flags = IREQ_CACHE_FLUSH;
 	if(argc != 2){
 		usage(argv[0]);
 	}
-	if((argv[1][0] != '0') && (argv[1][0] != '1')){
+	if((argv[1][0] != '0') && (argv[1][0] != '1') && (argv[1][0] != '2')){
 		usage(argv[0]);
 	}
-	dev_ble_prot = atoi(argv[1]) == 1? L2CAP_PROT:RFCOMM_PROT;
+	switch(atoi(argv[1])){
+		case 0:
+			dev_ble_prot = RFCOMM_PROT;
+			strncpy(prot_str, "RFCOMM_PORT", sizeof(prot_str));
+			break;
+		case 1:
+			dev_ble_prot = L2CAP_PROT;
+			strncpy(prot_str, "L2CAP_PORT", sizeof(prot_str));
+			break;
+		case 2:
+			dev_ble_prot = SDP_PROT;
+			strncpy(prot_str, "SDP_PORT", sizeof(prot_str));
+			break;
+		default:
+			strncpy(prot_str, "UNKNOW_PROT", sizeof(prot_str));
+			break;
+		}
 	
 	fprintf(stdout, "\n=====================================================================\n");
-	fprintf(stdout, "\nStarting the program with bluetooth protocol %s\n",dev_ble_prot==RFCOMM_PROT?"RFCOMM":"L2CAP");
+	fprintf(stdout, "\nStarting the program with bluetooth protocol %s\n",prot_str);
 	fprintf(stdout, "\n=====================================================================\n");
 	
 	ret_code = bluez_dev_setup();
@@ -48,7 +65,7 @@ int main(int argc, char** argv){
 
 void usage(char* pgm_name){
 	fprintf(stdout, "\n Bad arguments\n");
-	fprintf(stdout, "Usage: %s \"Bluetooth_Protocol\" \n \t Bluetooth_Protocol: 0 for RFCOMM or 1 for L2CAP\n",pgm_name);
+	fprintf(stdout, "Usage: %s \"Bluetooth_Protocol\" \n \t Bluetooth_Protocol: 0 for RFCOMM, 1 for L2CAP, 2 for SDP\n",pgm_name);
 	exit(EXIT_FAILURE);
 }
 

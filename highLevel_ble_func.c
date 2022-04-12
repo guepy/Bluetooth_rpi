@@ -25,21 +25,42 @@ void delay_ms(uint32_t milliseconds){
 	tick = clock() + CLOCKS_PER_SEC * milliseconds / 1000;
 	while(clock() < tick); 
 }
+
 int bluez_dev_setup(void ){
 	int ret_code = RET_SUCCESS;
 	int ctr=0;
+	char cmd[128];
 	enable_bluetooth_hci();
 	enable_bluetooth_service();	
 
 	fprintf(stdout, "Initializing bluetooth device...\n");
 	//looking for available bluetooth interface
-OPEN_DEV:	dev_id = hci_get_route(NULL);
+OPEN_DEV:	
+	dev_id = hci_get_route(NULL);
 	if(dev_id < 0){
-		fprintf(stdout,"Can not access Bluetooth device, It may be off\n");
+		perror("hci_get_route:");
+		fprintf(stdout,"Can not access Bluetooth device,dev_id is %d. It may be off\n", dev_id);
 		delay_ms(1000); 
-		fprintf(stdout,"Trying again %d\n", ctr);
 		ctr++;
-		if(ctr>3) return RET_FAILED;	
+		fprintf(stdout,"Trying again %d\n", ctr);
+		if(!(ctr%3)) {
+			// list wireless devices
+			fprintf(stdout, "Restarting bluetooth daemon service...\n");
+			strcpy(cmd, "sudo systemctl restart daemon-reload");
+			ret_code = system(cmd);
+			if(ret_code < 0){
+				perror("Can not list radio devices");
+				return ret_code;
+			}	
+			memset(cmd, 0, sizeof(cmd));
+			strcpy(cmd, "sudo systemctl restart bluetooth");
+			ret_code = system(cmd);
+			if(ret_code < 0){
+				perror("Can not list radio devices");
+				return ret_code;
+			}	
+		}
+		if(ctr>10) return RET_FAILED;
 		goto OPEN_DEV;
 	}
 	fprintf(stdout,"Bluetooth device id is %u \n", dev_id);
@@ -224,7 +245,8 @@ int enable_bluetooth_service(void){
 	}
 	
 	
-BLE_ON:	if(!strcmp(bleStatusStr, "RUNNING")){
+BLE_ON:	
+	if(!strcmp(bleStatusStr, "RUNNING")){
 		ble_state= ON;
 		fprintf(stdout, "Bluetooth service is ON\n");
 	}
@@ -280,7 +302,7 @@ No_device:	fprintf(stdout, "[Done]\n");
 	
 }
 
-int bluez_dev_connect(int protocol,const char* remote_dev_name){
+int bluez_dev_connect(BLE_prot protocol,const char* remote_dev_name){
 	bdaddr_t bdadd;
 	ret_code =0;
 	int i=0;
@@ -295,6 +317,9 @@ int bluez_dev_connect(int protocol,const char* remote_dev_name){
 				break;
 				case L2CAP_PROT:
 					ret_code = l2cap_client(bdadd);
+				break;
+				case SDP_PROT:
+					ble_device_search(bluez_addr[i]);
 				break;
 				default:
 				break;
@@ -330,6 +355,9 @@ int bluez_dev_connect(int protocol,const char* remote_dev_name){
 					break;
 					case L2CAP_PROT:
 						ret_code = l2cap_client(bdadd);
+					break;
+					case SDP_PROT:
+						ble_device_search(bluez_addr[i]);
 					break;
 					default:
 					break;
@@ -472,4 +500,103 @@ int l2cap_client(bdaddr_t bdadd) {
 	}	
 	
 	return ret_code;
+}
+
+int ble_device_search(char* sdp_remote_addr){
+	_u8 svc_uuid_int[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0x0, 0x1};//sdp
+	uuid_t svc_uuid;
+	bdaddr_t bdaddr;
+	sdp_list_t* rp_list = NULL, *search_list, *attrid_list;
+	sdp_session_t *sdp_session = NULL;
+	
+	if(sdp_remote_addr == NULL){
+		goto FAIL;
+	}
+	str2ba(sdp_remote_addr, &bdaddr);
+	//Connect to the sdp server running on the remote device
+	fprintf(stdout, "Connecting to the sdp server running on the remote device %s \n", sdp_remote_addr);
+	sdp_session = sdp_connect(BDADDR_ANY, &bdaddr, SDP_RETRY_IF_BUSY);
+	if(!sdp_session){
+		fprintf(stdout, "SDP can not connect to the remote address %s \n", sdp_remote_addr);
+		return RET_FAILED;
+	}
+	fprintf(stdout, "[Done]\n");
+		
+	// Specify the UUID of the application we are searching for
+	sdp_uuid128_create(&svc_uuid,&svc_uuid_int);
+	search_list = sdp_list_append(NULL, &svc_uuid);
+	
+	// Specify we want the complete list of applications the remote device offer
+	uint32_t app_range = 0xffff;
+	attrid_list = sdp_list_append(NULL, &app_range);
+	// get list of service records that have the specify UUID
+	fprintf(stdout, "Searching for list of service records that have the specify UUID\n"); 
+	ret_code = sdp_service_search_attr_req(sdp_session, search_list, SDP_ATTR_REQ_RANGE, attrid_list, &rp_list);
+	if(!rp_list){
+		fprintf(stderr, "No service found with the given UUID \n");
+		sdp_close(sdp_session);
+		return RET_FAILED;
+	}
+	sdp_list_t* r = rp_list;
+	fprintf(stdout, "[Done]\n");
+	fprintf(stdout, "Parsing search results...\n"); 
+	//Parsing and interpreting search result
+	//go trough each of the service record
+	for(;r;r= r->next){
+		sdp_record_t *record_data = (sdp_record_t*)r->data;
+		sdp_list_t *proto_list;
+		//get a list of protocol sequences
+		fprintf(stdout, "Getting list of protocol sequences...\n"); 
+		if(!sdp_get_access_protos(record_data, &proto_list)){
+			sdp_list_t *p = proto_list;
+			//go through each protocol sequence
+			for(;p; p = p->next){
+				sdp_list_t *pds = (sdp_list_t*)p->data;
+				//go through each protocol list of the protocol sequence
+				for(;pds;pds = pds->next){
+					//check the proto attributes
+					sdp_data_t *d = (sdp_data_t*)pds->data;					
+					uint32_t proto = 0;
+					for(;d;d=d->next){
+						switch(d->dtd){
+							case SDP_UUID16:
+								break;
+							case SDP_UUID32:
+								break;
+							case SDP_UUID128:
+								proto = sdp_uuid_to_proto(&d->val.uuid);
+								if(proto == 0xfd2d){
+									fprintf(stdout,"Redmi device detected: %u\n",proto);
+								}
+								break;
+							case SDP_UINT8:
+								if(proto == RFCOMM_UUID){
+									fprintf(stdout,"RFCOMM channel: %d\n",d->val.int8);
+								}
+								break;
+							default:
+								fprintf(stdout,"Unknow channel: \n");
+								break;
+						}
+					
+					}
+				}
+				sdp_list_free((sdp_list_t*)p->data,0);
+			}
+			sdp_list_free(proto_list,0);
+			fprintf(stdout, "Protocol sequences listing done\n");
+		}
+		else{
+			fprintf(stdout, "No protocol sequence found\n");
+		}
+		fprintf(stdout,"Found service record: 0x%X\n",record_data->handle);
+		sdp_record_free(record_data);
+	}
+	fprintf(stdout, "Parsing done\n");
+	sdp_close(sdp_session);
+	return RET_SUCCESS;
+FAIL:
+
+	fprintf(stdout, "Bad sdp remote address \n");
+	return RET_FAILED;
 }

@@ -43,7 +43,6 @@ highLevel_ble_func_dbg_msan.o: highLevel_ble_func.c highLevel_ble_func.h
 highLevel_ble_func_dbg_ub.o: highLevel_ble_func.c highLevel_ble_func.h
 	${CL} ${CFLAGS_DBG_UB} -c highLevel_ble_func.c -o highLevel_ble_func_dbg_ub.o
 	
-
 testBluetooth_dbg_asan: testBluetooth_dbg_asan.o highLevel_ble_func_dbg_asan.o
 	${CL} ${CFLAGS_DBG_ASAN} -o testBluetooth_dbg_asan testBluetooth_dbg_asan.o ${LINKIN}
 testBluetooth_dbg_asan.o: testBluetooth.c testBluetooth.h

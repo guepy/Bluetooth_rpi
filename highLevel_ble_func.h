@@ -25,7 +25,8 @@
 // Privates typedef
 typedef enum _BLE_prot{
 	RFCOMM_PROT = 0,
-	L2CAP_PROT 
+	L2CAP_PROT,
+	SDP_PROT
 }BLE_prot;
 
 
@@ -47,4 +48,5 @@ int rfcomm_client(bdaddr_t bdadd);
 int rfcomm_server(void);
 int l2cap_client(bdaddr_t bdadd);
 int l2cap_server(void);
-int bluez_dev_connect(int protocol,const char* remote_dev_name);
+int bluez_dev_connect(BLE_prot protocol,const char* remote_dev_name);
+int ble_device_search(char* sdp_remote_addr);
