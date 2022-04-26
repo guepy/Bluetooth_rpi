@@ -1,21 +1,20 @@
 ● bluetooth.service - Bluetooth service
      Loaded: loaded (/lib/systemd/system/bluetooth.service; enabled; vendor preset: enabled)
-     Active: active (running) since Fri 2022-04-08 16:56:26 BST; 2 days ago
+     Active: active (running) since Tue 2022-04-12 08:37:54 BST; 38min ago
        Docs: man:bluetoothd(8)
-   Main PID: 924 (bluetoothd)
+   Main PID: 2156 (bluetoothd)
      Status: "Running"
       Tasks: 1 (limit: 4915)
-        CPU: 90ms
+        CPU: 108ms
      CGroup: /system.slice/bluetooth.service
-             └─924 /usr/libexec/bluetooth/bluetoothd
+             └─2156 /usr/libexec/bluetooth/bluetoothd
 
-Apr 08 16:56:26 raspberrypi systemd[1]: Starting Bluetooth service...
-Apr 08 16:56:26 raspberrypi bluetoothd[924]: Bluetooth daemon 5.55
-Apr 08 16:56:26 raspberrypi systemd[1]: Started Bluetooth service.
-Apr 08 16:56:26 raspberrypi bluetoothd[924]: Starting SDP server
-Apr 08 16:56:26 raspberrypi bluetoothd[924]: Bluetooth management interface 1.21 initialized
-Apr 08 16:56:26 raspberrypi bluetoothd[924]: profiles/sap/server.c:sap_server_register() Sap driver initialization failed.
-Apr 08 16:56:26 raspberrypi bluetoothd[924]: sap-server: Operation not permitted (1)
-Apr 08 16:56:26 raspberrypi bluetoothd[924]: Endpoint registered: sender=:1.26 path=/MediaEndpoint/A2DPSink/sbc
-Apr 08 16:56:26 raspberrypi bluetoothd[924]: Endpoint registered: sender=:1.26 path=/MediaEndpoint/A2DPSource/sbc
-Apr 08 16:56:26 raspberrypi bluetoothd[924]: Failed to set privacy: Rejected (0x0b)
+Apr 12 08:37:54 raspberrypi systemd[1]: Starting Bluetooth service...
+Apr 12 08:37:54 raspberrypi bluetoothd[2156]: Bluetooth daemon 5.55
+Apr 12 08:37:54 raspberrypi systemd[1]: Started Bluetooth service.
+Apr 12 08:37:54 raspberrypi bluetoothd[2156]: Starting SDP server
+Apr 12 08:37:54 raspberrypi bluetoothd[2156]: Bluetooth management interface 1.21 initialized
+Apr 12 08:37:54 raspberrypi bluetoothd[2156]: profiles/sap/server.c:sap_server_register() Sap driver initialization failed.
+Apr 12 08:37:54 raspberrypi bluetoothd[2156]: sap-server: Operation not permitted (1)
+Apr 12 08:37:54 raspberrypi bluetoothd[2156]: Endpoint registered: sender=:1.26 path=/MediaEndpoint/A2DPSink/sbc
+Apr 12 08:37:54 raspberrypi bluetoothd[2156]: Endpoint registered: sender=:1.26 path=/MediaEndpoint/A2DPSource/sbc

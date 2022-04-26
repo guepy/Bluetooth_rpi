@@ -46,7 +46,7 @@ OPEN_DEV:
 		if(!(ctr%3)) {
 			// list wireless devices
 			fprintf(stdout, "Restarting bluetooth daemon service...\n");
-			strcpy(cmd, "sudo systemctl restart daemon-reload");
+			strcpy(cmd, "sudo systemctl daemon-reload");
 			ret_code = system(cmd);
 			if(ret_code < 0){
 				perror("Can not list radio devices");
